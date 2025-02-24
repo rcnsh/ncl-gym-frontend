@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const chartData: gym_occupancy[] = await db.gym_occupancy.findMany();
@@ -65,7 +66,7 @@ export default function Component({
   chartData,
   serverReferenceDate,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [timeRange, setTimeRange] = React.useState("90d");
+  const [timeRange, setTimeRange] = React.useState("30");
 
   interface ChartDataItem {
     timestamp: string;
@@ -82,11 +83,13 @@ export default function Component({
         () => new Date(serverReferenceDate),
         [serverReferenceDate],
       );
-      let daysToSubtract = 90;
-      if (timeRange === "30d") {
-        daysToSubtract = 30;
-      } else if (timeRange === "7d") {
+      let daysToSubtract = 30;
+      if (timeRange === "7") {
         daysToSubtract = 7;
+      } else if (timeRange === "1") {
+        daysToSubtract = 1;
+      } else {
+        daysToSubtract = parseInt(timeRange);
       }
       const startDate = new Date(referenceDate);
       startDate.setDate(startDate.getDate() - daysToSubtract);
@@ -94,15 +97,13 @@ export default function Component({
     },
   );
 
-  console.log(filteredData);
-
   return (
     <Card>
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
           <CardTitle>Area Chart - Interactive</CardTitle>
           <CardDescription>
-            Showing total visitors for the last 3 months
+            Showing total visitors for the last month
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
@@ -110,18 +111,30 @@ export default function Component({
             className="w-[160px] rounded-lg sm:ml-auto"
             aria-label="Select a value"
           >
-            <SelectValue placeholder="Last 3 months" />
+            <SelectValue placeholder="Last month" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl bg-white">
-            <SelectItem value="90d" className="rounded-lg">
-              Last 3 months
-            </SelectItem>
-            <SelectItem value="30d" className="rounded-lg">
+          <SelectContent className="min-h-[130px] rounded-xl bg-white">
+            <SelectItem value="30" className="rounded-lg">
               Last 30 days
             </SelectItem>
-            <SelectItem value="7d" className="rounded-lg">
+            <SelectItem value="7" className="rounded-lg">
               Last 7 days
             </SelectItem>
+            <SelectItem value="1" className="rounded-lg">
+              Last 24 hours
+            </SelectItem>
+            <Slider
+              defaultValue={[14]}
+              min={1}
+              max={30}
+              step={1}
+              onValueChange={(value) => {
+                if (value[0] !== undefined) {
+                  setTimeRange(value[0].toString());
+                }
+              }}
+              className="rounded-lg bg-gray-200"
+            />
           </SelectContent>
         </Select>
       </CardHeader>
@@ -187,7 +200,6 @@ export default function Component({
               stackId="a"
               name="Occupancy:"
             />
-            <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>
