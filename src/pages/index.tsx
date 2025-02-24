@@ -37,6 +37,10 @@ export const getServerSideProps: GetServerSideProps = async () => {
       month: "short",
       day: "numeric",
     }),
+    formattedTime: new Date(item.timestamp).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
   }));
   const referenceDate = new Date();
   return {
@@ -66,6 +70,7 @@ export default function Component({
   interface ChartDataItem {
     timestamp: string;
     formattedDate: string;
+    formattedTime: string;
   }
 
   interface FilteredDataItem extends ChartDataItem {}
@@ -88,6 +93,8 @@ export default function Component({
       return date >= startDate;
     },
   );
+
+  console.log(filteredData);
 
   return (
     <Card>
@@ -162,7 +169,12 @@ export default function Component({
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => value}
+                  labelFormatter={(value, payload) => {
+                    const item = payload && payload[0] && payload[0].payload;
+                    return item
+                      ? `${item.formattedDate} ${item.formattedTime}`
+                      : value;
+                  }}
                   indicator="dot"
                 />
               }
@@ -170,9 +182,10 @@ export default function Component({
             <Area
               dataKey="occupancy_level"
               type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
+              fill="#8884d8"
+              stroke="#8884d8"
               stackId="a"
+              name="Occupancy:"
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
