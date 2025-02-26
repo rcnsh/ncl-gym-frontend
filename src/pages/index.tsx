@@ -83,14 +83,8 @@ export default function Component({
         () => new Date(serverReferenceDate),
         [serverReferenceDate],
       );
-      let daysToSubtract = 30;
-      if (timeRange === "7") {
-        daysToSubtract = 7;
-      } else if (timeRange === "1") {
-        daysToSubtract = 1;
-      } else {
-        daysToSubtract = parseInt(timeRange);
-      }
+      let daysToSubtract = parseInt(timeRange);
+      
       const startDate = new Date(referenceDate);
       startDate.setDate(startDate.getDate() - daysToSubtract);
       return date >= startDate;
