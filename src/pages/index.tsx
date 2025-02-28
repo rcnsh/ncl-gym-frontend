@@ -65,7 +65,7 @@ const chartConfig = {
 export default function Component({
   chartData,
   serverReferenceDate,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+}: InferGetServerSidePropsType) {
   const [timeRange, setTimeRange] = React.useState("30");
 
   interface ChartDataItem {
@@ -111,7 +111,15 @@ export default function Component({
             className="w-[160px] rounded-lg sm:ml-auto"
             aria-label="Select a value"
           >
-            <SelectValue placeholder="Last month" />
+            <SelectValue>
+              {timeRange === "30" && "Last 30 days"}
+              {timeRange === "7" && "Last 7 days"}
+              {timeRange === "1" && "Last 24 hours"}
+              {timeRange !== "30" &&
+                timeRange !== "7" &&
+                timeRange !== "1" &&
+                "Custom"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="min-h-[130px] rounded-xl bg-white">
             <SelectItem value="30" className="rounded-lg">
