@@ -65,7 +65,7 @@ const chartConfig = {
 export default function Component({
   chartData,
   serverReferenceDate,
-}: InferGetServerSidePropsType) {
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [timeRange, setTimeRange] = React.useState("30");
 
   interface ChartDataItem {
