@@ -115,7 +115,7 @@ export default function Component({
                 "Custom"}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent className="min-h-[130px] rounded-xl bg-white">
+            <SelectContent className="min-h-[130px] rounded-xl bg-white">
             <SelectItem value="30" className="rounded-lg">
               Last 30 days
             </SelectItem>
@@ -130,14 +130,14 @@ export default function Component({
               min={1}
               max={30}
               step={1}
-              onValueChange={(value) => {
-                if (value[0] !== undefined) {
-                  setTimeRange(value[0].toString());
-                }
+              onValueChange={(value: number[]) => {
+              if (value[0] !== undefined) {
+                setTimeRange(value[0].toString());
+              }
               }}
               className="rounded-lg bg-gray-200"
             />
-          </SelectContent>
+            </SelectContent>
         </Select>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
@@ -145,31 +145,31 @@ export default function Component({
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData}>
+            <AreaChart data={filteredData as FilteredDataItem[]}>
             <defs>
               <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.1}
-                />
+              <stop
+                offset="5%"
+                stopColor="var(--color-desktop)"
+                stopOpacity={0.8}
+              />
+              <stop
+                offset="95%"
+                stopColor="var(--color-desktop)"
+                stopOpacity={0.1}
+              />
               </linearGradient>
               <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
-                />
+              <stop
+                offset="5%"
+                stopColor="var(--color-mobile)"
+                stopOpacity={0.8}
+              />
+              <stop
+                offset="95%"
+                stopColor="var(--color-mobile)"
+                stopOpacity={0.1}
+              />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -183,15 +183,15 @@ export default function Component({
             <ChartTooltip
               cursor={false}
               content={
-                <ChartTooltipContent
-                  labelFormatter={(value, payload) => {
-                    const item = payload && payload[0] && payload[0].payload;
-                    return item
-                      ? `${item.formattedDate} ${item.formattedTime}`
-                      : value;
-                  }}
-                  indicator="dot"
-                />
+              <ChartTooltipContent
+                labelFormatter={(value: string, payload: any) => {
+                const item = payload && payload[0] && payload[0].payload;
+                return item
+                  ? `${item.formattedDate} ${item.formattedTime}`
+                  : value;
+                }}
+                indicator="dot"
+              />
               }
             />
             <Area
@@ -202,7 +202,7 @@ export default function Component({
               stackId="a"
               name="Occupancy:"
             />
-          </AreaChart>
+            </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>
