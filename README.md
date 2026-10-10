@@ -1,29 +1,80 @@
-# Create T3 App
+# ncl-gym-frontend
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Charts of gym occupancy over time, read from a Postgres table.
 
-## What's next? How do I make an app with this?
+A single-page Next.js app (pages router). On each request the page reads every row from the `gym_occupancy` table and renders two charts: an area chart of occupancy over the last 30 days, 7 days or 24 hours, and a bar chart of the average occupancy per day for the last seven days with data. This repo only reads the data; whatever writes rows into `gym_occupancy` lives elsewhere.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+<!-- TODO: add screenshot/GIF at docs/screenshot.png -->
+<!-- ![ncl-gym-frontend screenshot](docs/screenshot.png) -->
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+Built from [create-t3-app](https://create.t3.gg/) with Next.js 15, React 19, Prisma, Tailwind CSS 4, shadcn/ui and Recharts.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Quickstart
 
-## Learn More
+Needs Node.js, pnpm (`packageManager` pins `pnpm@10.4.1`) and a Postgres database.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+```sh
+pnpm install               # also runs `prisma generate`
+echo 'DATABASE_URL="postgresql://user:password@localhost:5432/gym"' > .env
+pnpm db:push               # create the gym_occupancy table from prisma/schema.prisma
+pnpm dev                   # http://localhost:3000
+```
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+The page is empty until the table has rows. There are no migrations in `prisma/migrations`, so use `db:push` rather than `db:migrate` against a fresh database.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Configuration
 
-## How do I deploy this?
+Environment variables are validated at build and start time by `src/env.js` (`@t3-oss/env-nextjs` + zod).
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+| Variable | Required | Read in | Notes |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | yes | `src/env.js`, `prisma/schema.prisma` | Postgres connection URL. Must be a valid URL. |
+| `NODE_ENV` | no | `src/env.js`, `src/server/db.ts` | `development` (default), `test` or `production`. In `development` Prisma logs queries. |
+| `SKIP_ENV_VALIDATION` | no | `src/env.js` | Any non-empty value skips env validation, e.g. for builds without a database. |
+
+No client-side (`NEXT_PUBLIC_*`) variables are used.
+
+### Data model
+
+`prisma/schema.prisma`:
+
+```prisma
+model gym_occupancy {
+  id              Int      @id @default(autoincrement())
+  timestamp       DateTime @default(now())
+  occupancy_level Int
+  @@index([timestamp], name: "idx_timestamp")
+}
+```
+
+### Exporting data
+
+`export.ts` dumps every row (ordered by `timestamp`) to `data.json` for analysis outside the app. `data.json` in the repo is a committed snapshot of that output. There is no script for it in `package.json`; it needs a TypeScript runner that understands the `@/` path alias.
+
+## Deployment
+
+It's a standard Next.js server build. The page uses `getServerSideProps`, so it needs a Node runtime with `DATABASE_URL` set, not a static export.
+
+```sh
+pnpm build
+pnpm start
+```
+
+There is no hosting config in the repo (no `vercel.json`, `wrangler` config or Dockerfile). See the create-t3-app guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker).
+
+## Contributing
+
+Setup is the Quickstart above. Before opening a PR:
+
+```sh
+pnpm typecheck       # tsc --noEmit
+pnpm lint            # next lint
+pnpm format:check    # prettier; `pnpm format:write` to fix
+pnpm build
+```
+
+`pnpm check` runs lint and typecheck together. `next lint` loads `next.config.js`, which validates env vars, so set `DATABASE_URL` or `SKIP_ENV_VALIDATION=1` first. There are no tests.
+
+Keep PRs small and focused, describe what changed and why, and include a screenshot for visual changes. Don't commit `.env` files.
+
+Other scripts: `pnpm db:studio` (Prisma Studio), `pnpm db:generate` (`prisma migrate dev`), `pnpm preview` (build and start).
